@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CogAFFC Workshop</title>
+<meta name="description" content="The CogAFFC Workshop series on Cognition-driven Affective Computing: all editions, organizers and contact.">
+<link rel="icon" type="image/png" href="assets/cogaffc-logo.png">
+<link rel="apple-touch-icon" href="assets/cogaffc-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500..900&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: Swiss-poster minimalism at a calmer size. Hero = title on the left, a live figure on the right
+   (a brain whose folds slowly shift, sending waves out to a ring of eight emotions).
+   A flowing signal band divides hero from the editions, which are big full-width cards you click as a whole. */
+:root {
+  --bg: #ffffff;
+  --ink: #111111;
+  --soft: #f2f2f2;
+  --red: #cf2e20;
+  --on-red: #ffffff;
+  --brain: #f5bfc6;
+  --brain-hi: #fde4e7;
+  --brain-line: #a3324a;
+  --plate: #ffffff;
+  --line: #d8d8dc;
+  --f-display: "Inter Tight", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Inter", "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e0e0f; --ink: #f2f2f2; --soft: #1c1c1e; --red: #e0402f; --on-red: #ffffff; --brain: #e59aa6; --brain-hi: #f7cdd3; --brain-line: #6f1a2c; --plate: #f4f4f4; --line: #34343a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e0e0f; --ink: #f2f2f2; --soft: #1c1c1e; --red: #e0402f; --on-red: #ffffff; --brain: #e59aa6; --brain-hi: #f7cdd3; --brain-line: #6f1a2c; --plate: #f4f4f4; --line: #34343a;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+img { max-width: 100%; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 17px;
+  line-height: 1.55;
+}
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--red); outline-offset: 4px; }
+.in {
+  max-width: 1160px;
+  margin-inline: auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* Nav */
+.nav { border-top: 6px solid var(--red); }
+.nav .in { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 68px; }
+.brand { display: inline-flex; align-items: center; gap: 10px; font: 900 1.3rem/1 var(--f-display); letter-spacing: -0.04em; text-decoration: none; }
+.brand em { font-style: normal; color: var(--red); }
+.brand-mark { display: block; width: 40px; height: auto; }
+.links { display: flex; align-items: center; gap: 26px; margin: 0; padding: 0; list-style: none; }
+.links a { font-weight: 600; font-size: 1rem; text-decoration: none; }
+.links a:hover { color: var(--red); }
+.links .cta { padding: 9px 16px; background: var(--red); color: var(--on-red); }
+.links .cta:hover { color: var(--on-red); background: var(--ink); }
+@media (max-width: 600px) { .links li:not(:last-child) { display: none; } }
+
+/* Hero */
+.hero .in { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); align-items: center; gap: 24px 40px; padding-block: 28px 0; }
+@media (max-width: 860px) { .hero .in { grid-template-columns: minmax(0, 1fr); padding-block: 28px 0; } }
+.hero h1 { margin: 0 0 18px; font: 900 clamp(2.8rem, 6.2vw, 5.2rem)/0.92 var(--f-display); letter-spacing: -0.055em; text-wrap: balance; }
+.hero h1 span { color: var(--red); }
+.sub { margin: 0 0 22px; font: 700 clamp(1.25rem, 2.3vw, 1.6rem)/1.2 var(--f-display); letter-spacing: -0.02em; }
+.quote { margin: 0 0 30px; max-width: 32em; }
+.quote p { margin: 0; font: 400 clamp(1.1rem, 1.7vw, 1.3rem)/1.5 var(--f-body); }
+.quote p::before { content: "\201C"; display: block; height: 0.62em; margin-bottom: 4px; font: 900 4.4rem/1 var(--f-display); color: var(--red); }
+.quote cite { display: block; margin-top: 12px; font-style: normal; font-weight: 400; font-size: 1rem; }
+.quote cite i { font-style: italic; font-weight: 400; }
+.btn { display: inline-flex; align-items: center; gap: 12px; padding: 15px 24px; background: var(--ink); color: var(--bg); font-weight: 700; font-size: 1.05rem; text-decoration: none; transition: transform 0.15s, box-shadow 0.15s; }
+.btn:hover { transform: translate(-3px, -3px); box-shadow: 6px 6px 0 var(--red); }
+.btn svg { width: 18px; height: 18px; }
+.mind { margin: 0; }
+.mind canvas { display: block; width: 100%; max-width: 600px; aspect-ratio: 1; margin-inline: auto; touch-action: pan-y; }
+
+/* Signal band */
+.band canvas { display: block; width: 100%; height: 120px; }
+@media (max-width: 600px) { .band canvas { height: 90px; } }
+
+/* Sections */
+section { scroll-margin-top: 16px; }
+section .in { padding-block: 56px 0; }
+h2 { margin: 0 0 24px; font: 600 clamp(1.8rem, 3.6vw, 2.6rem)/1.1 var(--f-display); letter-spacing: -0.02em; }
+
+/* Event cards: white at rest, red on hover or press. Text stays selectable; a click anywhere else opens the site. */
+.eds { display: grid; gap: 22px; margin: 0; padding: 0; list-style: none; }
+.ed {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px 40px;
+  padding: 36px 40px;
+  border: 3px solid var(--ink);
+  background: var(--bg);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color 0.18s, color 0.18s, border-color 0.18s, transform 0.18s, box-shadow 0.18s;
+}
+.ed:hover, .ed:active, .ed:focus-within { background: var(--red); border-color: var(--red); color: var(--on-red); transform: translate(-5px, -5px); box-shadow: 10px 10px 0 var(--ink); }
+.ed::before, .ed::after { content: ""; position: absolute; border-radius: 50%; border: 2px solid var(--on-red); opacity: 0; pointer-events: none; transition: opacity 0.18s; }
+.ed::before { width: 340px; height: 340px; right: -90px; top: -150px; }
+.ed::after { width: 220px; height: 220px; right: -30px; top: -90px; }
+.ed:hover::before, .ed:hover::after, .ed:active::before, .ed:active::after { opacity: 0.22; }
+.ed-num { font: 900 clamp(5rem, 11vw, 8.5rem)/0.78 var(--f-display); letter-spacing: -0.08em; padding-right: 0.06em; color: var(--red); }
+.ed:not(.now) .ed-num { color: transparent; -webkit-text-stroke: 3px var(--ink); }
+.ed:hover .ed-num, .ed:active .ed-num, .ed:focus-within .ed-num { color: var(--on-red); }
+.ed:not(.now):hover .ed-num, .ed:not(.now):active .ed-num, .ed:not(.now):focus-within .ed-num { color: transparent; -webkit-text-stroke-color: var(--on-red); }
+.ed-main { position: relative; min-width: 0; }
+.ed-tag { display: inline-block; margin-bottom: 14px; padding: 3px 14px; border: 2px solid currentColor; border-radius: 999px; font-weight: 700; font-size: 0.95rem; }
+.ed.now .ed-tag { background: var(--red); border-color: var(--red); color: var(--on-red); }
+.ed.now:hover .ed-tag, .ed.now:active .ed-tag, .ed.now:focus-within .ed-tag { background: transparent; border-color: var(--on-red); }
+.ed-name { margin: 0; font: 800 clamp(1.9rem, 4vw, 3rem)/1 var(--f-display); letter-spacing: -0.045em; }
+.ed-where { margin: 12px 0 0; font-size: 1.15rem; font-weight: 500; }
+.ed-theme { display: inline-block; margin: 18px 0 0; padding-top: 12px; border-top: 2px solid currentColor; font: 500 clamp(1.15rem, 2vw, 1.45rem)/1.25 var(--f-display); letter-spacing: -0.01em; }
+.ed-theme .k { font-weight: 500; }
+.ed-go { position: relative; display: grid; place-items: center; width: 68px; height: 68px; border: 3px solid currentColor; border-radius: 50%; color: inherit; transition: transform 0.2s; }
+.ed-go svg { width: 26px; height: 26px; }
+.ed:hover .ed-go { transform: rotate(-45deg); }
+.ed-go:focus-visible { outline-color: var(--on-red); }
+@media (max-width: 700px) {
+  .ed { grid-template-columns: minmax(0, 1fr); padding: 26px 24px; }
+  .ed-go { width: 54px; height: 54px; }
+}
+
+/* Organizations: school logo on a white plate, lab name underneath */
+.orgs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 14px; margin: 0; padding: 0; list-style: none; }
+@media (max-width: 900px) { .orgs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 420px) { .orgs { gap: 12px; } }
+.org { display: flex; flex-direction: column; border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; transition: transform 0.18s, box-shadow 0.18s; }
+.org:hover, .org:active, .org:focus-within { transform: translateY(-3px); border-color: var(--red); box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12); }
+.plate { display: flex; align-items: center; justify-content: center; height: 100px; padding: 16px 20px; background: var(--plate); border-bottom: 1px solid var(--line); }
+.plate img { display: block; width: auto; height: auto; max-width: 100%; max-height: 56px; }
+.org-name { display: flex; align-items: center; justify-content: center; gap: 12px; flex: 1; margin: 0; text-align: center; text-wrap: balance; padding: 10px 14px 12px; font: 600 0.98rem/1.3 var(--f-display); letter-spacing: -0.01em; transition: background-color 0.18s, color 0.18s; }
+.org:hover .org-name, .org:active .org-name, .org:focus-within .org-name { background: var(--red); color: var(--on-red); }
+.lab-mark { flex: none; display: grid; place-items: center; width: 40px; height: 34px; padding: 2px; border-radius: 8px; background: var(--plate); }
+.lab-mark img { display: block; width: auto; height: auto; max-width: 100%; max-height: 100%; }
+@media (max-width: 420px) { .lab-mark { width: 40px; height: 34px; } .plate { height: 96px; padding: 16px; } .plate img { max-height: 52px; } .org-name { padding: 12px 12px 14px; font-size: 0.98rem; } }
+@media (prefers-reduced-motion: reduce) {
+  .ed, .ed-go, .btn, .org, .org-name, .ed::before, .ed::after { transition: none; }
+}
+
+/* Contact */
+.contact { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin: 0; padding: 26px 30px; background: var(--soft); font-size: 1.3rem; font-weight: 600; }
+.contact .mail { overflow-wrap: anywhere; text-decoration: none; color: var(--red); }
+.contact .mail:hover { text-decoration: underline; }
+.copy { padding: 7px 16px; border: 2px solid var(--ink); background: transparent; color: var(--ink); font: 700 0.95rem var(--f-body); cursor: pointer; }
+.copy:hover { background: var(--ink); color: var(--bg); }
+
+footer .in { padding-block: 64px 40px; font-size: 0.95rem; }
+</style>
+</head>
+<body>
+<nav class="nav" aria-label="Main">
+  <div class="in">
+    <a class="brand" href="#top"><img class="brand-mark" src="assets/cogaffc-logo.png" alt="" width="240" height="235"><span class="brand-text">Cog<em>AFFC</em></span></a>
+    <ul class="links">
+      <li><a href="#organizations">Organizations</a></li>
+      <li><a href="#contact">Contact</a></li>
+      <li><a class="cta" href="#events">Events</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="in">
+    <div>
+      <h1>The <span>CogAFFC</span> Workshop</h1>
+      <p class="sub">Cognition-driven Affective Computing</p>
+      <blockquote class="quote">
+        <p>The question is not whether intelligent machines can have any emotions, but whether machines can be intelligent without any emotions.</p>
+        <cite>Marvin Minsky, <i>The Society of Mind</i></cite>
+      </blockquote>
+      <a class="btn" href="#events">View events<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v13M6 12l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square"/></svg></a>
+    </div>
+    <figure class="mind">
+      <canvas id="mind" role="img" aria-label="A brain at the centre sends waves out to a ring of eight emotions: joy, trust, fear, surprise, sadness, disgust, anger and anticipation"></canvas>
+    </figure>
+  </div>
+</header>
+
+<div class="band" aria-hidden="true"><div class="in"><canvas id="band"></canvas></div></div>
+
+<main>
+  <section id="events">
+    <div class="in">
+      <h2>Events</h2>
+      <ol class="eds" reversed>
+        <li class="ed now" data-card>
+          <span class="ed-num" aria-hidden="true">2</span>
+          <div class="ed-main">
+            <span class="ed-tag">Upcoming</span>
+            <h3 class="ed-name">COLING 2027</h3>
+            <p class="ed-where">Macau, China · 9-14 May 2027</p>
+            <p class="ed-theme"><span class="k">Theme:</span> Agents That Think and Feel</p>
+          </div>
+          <a class="ed-go" href="https://cogaffc.github.io/COLING2027/" target="_blank" rel="noopener" aria-label="Open the COLING 2027 workshop site"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square"/></svg></a>
+        </li>
+        <li class="ed" data-card>
+          <span class="ed-num" aria-hidden="true">1</span>
+          <div class="ed-main">
+            <span class="ed-tag">Past</span>
+            <h3 class="ed-name">ACM MM 2025</h3>
+            <p class="ed-where">Dublin, Ireland · 27 October 2025 · held as CogMAEC</p>
+            <p class="ed-theme"><span class="k">Theme:</span> Understanding Why We Feel</p>
+          </div>
+          <a class="ed-go" href="https://cogaffc.github.io/MM2025/" target="_blank" rel="noopener" aria-label="Open the ACM MM 2025 workshop site"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square"/></svg></a>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="organizations">
+    <div class="in">
+      <h2>Organizations</h2>
+      <ul class="orgs">
+        <li class="org" data-card>
+          <a class="plate" href="https://ctic.nus.edu.sg/" target="_blank" rel="noopener" aria-label="Centre for Trusted Internet and Community, National University of Singapore"><img src="assets/logos/nus.png" alt="National University of Singapore" width="500" height="229"></a>
+          <p class="org-name">Centre for Trusted Internet and Community</p>
+        </li>
+        <li class="org" data-card>
+          <a class="plate" href="https://sentic.net/" target="_blank" rel="noopener" aria-label="SenticNet, Nanyang Technological University"><img src="assets/logos/ntu.png" alt="Nanyang Technological University" width="500" height="180"></a>
+          <p class="org-name"><span class="lab-mark"><img src="assets/labs/senticnet.png" alt="" width="131" height="160"></span>SenticNet</p>
+        </li>
+        <li class="org" data-card>
+          <a class="plate" href="https://haofei.vip/" target="_blank" rel="noopener" aria-label="Department of Computer Science, University of Oxford"><img src="assets/logos/oxford.png" alt="University of Oxford" width="500" height="146"></a>
+          <p class="org-name">Department of Computer Science</p>
+        </li>
+        <li class="org" data-card>
+          <a class="plate" href="https://isakzhang.github.io/" target="_blank" rel="noopener" aria-label="iNLP Lab, Singapore University of Technology and Design"><img src="assets/logos/sutd.png" alt="Singapore University of Technology and Design" width="500" height="195"></a>
+          <p class="org-name">iNLP Lab</p>
+        </li>
+        <li class="org" data-card>
+          <a class="plate" href="https://liziliao.github.io/" target="_blank" rel="noopener" aria-label="CoAgent Lab, Singapore Management University"><img src="assets/logos/smu.png" alt="Singapore Management University" width="500" height="197"></a>
+          <p class="org-name">CoAgent Lab</p>
+        </li>
+        <li class="org" data-card>
+          <a class="plate" href="https://lacc.whu.edu.cn/" target="_blank" rel="noopener" aria-label="Language and Cognition Computing Lab, Wuhan University"><img src="assets/logos/whu.png" alt="Wuhan University" width="280" height="80"></a>
+          <p class="org-name">Language and Cognition Computing Lab</p>
+        </li>
+        <li class="org" data-card>
+          <a class="plate" href="https://coai.cs.tsinghua.edu.cn/" target="_blank" rel="noopener" aria-label="CoAI Group, Tsinghua University"><img src="assets/logos/tsinghua.png" alt="Tsinghua University" width="500" height="157"></a>
+          <p class="org-name"><span class="lab-mark"><img src="assets/labs/coai.png" alt="" width="240" height="111"></span>CoAI Group</p>
+        </li>
+        <li class="org" data-card>
+          <a class="plate" href="https://kiinformatik.mri.tum.de/en/chair-health-informatics" target="_blank" rel="noopener" aria-label="Chair of Health Informatics, Technical University of Munich"><img src="assets/logos/tum.png" alt="TUM Universitätsklinikum" width="412" height="93"></a>
+          <p class="org-name">Chair of Health Informatics</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="in">
+      <h2>Contact</h2>
+      <p class="contact"><span>Bobo Li</span><a class="mail" id="mail" href="mailto:libobo@nus.edu.sg">libobo@nus.edu.sg</a><button type="button" class="copy" id="copy">Copy</button></p>
+    </div>
+  </section>
+</main>
+
+<footer><div class="in">© 2026 CogAFFC Workshop</div></footer>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function css(n) { return getComputedStyle(root).getPropertyValue(n).trim(); }
+  function rgba(hex, a) {
+    var h = hex.replace('#', '');
+    if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+    var n = parseInt(h, 16);
+    return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + a + ')';
+  }
+  var C = {};
+  function readColors() { C = { ink: css('--ink'), red: css('--red'), bg: css('--bg'), on: css('--on-red'), brain: css('--brain'), brainHi: css('--brain-hi'), brainLine: css('--brain-line') }; }
+  function ringR(w) { return w * (w < 460 ? 0.31 : 0.35); }
+
+  /* copy */
+  var copyBtn = document.getElementById('copy'), mail = document.getElementById('mail');
+  function selectMail() {
+    var r = document.createRange(); r.selectNodeContents(mail);
+    var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    copyBtn.textContent = 'Selected';
+  }
+  copyBtn.addEventListener('click', function () {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(mail.textContent.trim()).then(function () {
+        copyBtn.textContent = 'Copied';
+        setTimeout(function () { copyBtn.textContent = 'Copy'; }, 1600);
+      }, selectMail);
+    } else { selectMail(); }
+  });
+
+  /* cards: a click anywhere opens the link, unless the reader is selecting text */
+  document.querySelectorAll('[data-card]').forEach(function (card) {
+    var link = card.querySelector('a[href]');
+    card.addEventListener('click', function (e) {
+      if (!link || e.target.closest('a')) return;
+      var sel = window.getSelection();
+      if (sel && sel.toString().trim()) return;
+      link.click();
+    });
+  });
+
+  /* gradient noise */
+  function hash(ix, iy) {
+    var h = Math.imul(ix | 0, 374761393) ^ Math.imul(iy | 0, 668265263);
+    h = Math.imul(h ^ (h >>> 13), 1274126177);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+  function noise(x, y, s) {
+    var ix = Math.floor(x), iy = Math.floor(y), fx = x - ix, fy = y - iy;
+    function g(i, j, dx, dy) { var a = hash(i + s * 131, j - s * 71) * 6.2831853; return Math.cos(a) * dx + Math.sin(a) * dy; }
+    var u = fx * fx * fx * (fx * (fx * 6 - 15) + 10), v = fy * fy * fy * (fy * (fy * 6 - 15) + 10);
+    var a0 = g(ix, iy, fx, fy), b0 = g(ix + 1, iy, fx - 1, fy), a1 = g(ix, iy + 1, fx, fy - 1), b1 = g(ix + 1, iy + 1, fx - 1, fy - 1);
+    var x0 = a0 + (b0 - a0) * u, x1 = a1 + (b1 - a1) * u;
+    return (x0 + (x1 - x0) * v) * 1.45;
+  }
+
+  /* canvas helper */
+  function setup(canvas, square) {
+    var ctx = canvas.getContext('2d');
+    var st = { ctx: ctx, w: 0, h: 0, dpr: 1 };
+    st.size = function () {
+      var r = canvas.getBoundingClientRect();
+      st.dpr = Math.min(window.devicePixelRatio || 1, 2);
+      st.w = r.width; st.h = square ? r.width : r.height;
+      canvas.width = Math.max(1, Math.round(st.w * st.dpr));
+      canvas.height = Math.max(1, Math.round(st.h * st.dpr));
+      ctx.setTransform(st.dpr, 0, 0, st.dpr, 0, 0);
+    };
+    return st;
+  }
+
+  /* ---------- the mind figure ---------- */
+  /* face kinds: 0 joy, 1 trust, 2 fear, 3 surprise, 4 sadness, 5 disgust, 6 anger, 7 anticipation.
+     Around the ring, positive and negative alternate, four of each, with no two similar colours side by side. */
+  var NAMES = ['Joy', 'Trust', 'Fear', 'Surprise', 'Sadness', 'Disgust', 'Anger', 'Anticipation'];
+  /* clockwise from the top; the left and right slots take short names so the labels fit the canvas */
+  var ORDER = [7, 4, 1, 6, 3, 5, 0, 2];
+  var EMO = ORDER.map(function (k) { return NAMES[k]; });
+  var mindCanvas = document.getElementById('mind');
+  var M = setup(mindCanvas, true);
+  var brain = document.createElement('canvas'), bctx = brain.getContext('2d');
+  var lastBrain = -1, hover = -1;
+
+  function hemiPath(ctx, s, o, hw, hh, gap) {
+    var cx = o + s * (hw / 2 + gap / 2);
+    for (var k = 0; k <= 80; k++) {
+      var th = k / 80 * Math.PI * 2, ux = Math.cos(th), uy = Math.sin(th);
+      var medial = ux * s < 0;
+      var mx = medial ? -s * Math.pow(Math.abs(ux), 0.42) : ux;
+      var ws = medial ? 1 : 1 - 0.12 * Math.max(0, -uy) + 0.05 * Math.max(0, uy);
+      var x = cx + mx * hw / 2 * ws, y = o + uy * hh / 2;
+      if (k === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+  }
+
+  function drawBrain(t) {
+    var w = M.w, d = M.dpr;
+    if (brain.width !== mindCanvas.width) { brain.width = mindCanvas.width; brain.height = mindCanvas.height; }
+    bctx.setTransform(d, 0, 0, d, 0, 0);
+    bctx.clearRect(0, 0, w, w);
+    var o = w / 2, hw = w * 0.16, hh = w * 0.37, gap = w * 0.006;
+    var x0 = o - hw * 1.06 - gap, y0 = o - hh / 2, bw = 2 * hw * 1.06 + 2 * gap, bh = hh;
+    var step = Math.max(2.5, w / 190), nx = Math.ceil(bw / step) + 1, ny = Math.ceil(bh / step) + 1;
+    var k = 2.1 / hw, a = t * 0.11, ca = Math.cos(a), sa = Math.sin(a);
+    var F = new Float32Array(nx * ny);
+    for (var j = 0; j < ny; j++) for (var i = 0; i < nx; i++) {
+      var qx = (x0 + i * step) * k, qy = (y0 + j * step) * k;
+      var px = qx + 0.55 * noise(qx * 0.8, qy * 0.8, 21), py = qy + 0.55 * noise(qx * 0.8 + 5.2, qy * 0.8 + 1.3, 22);
+      F[j * nx + i] = ca * noise(px, py, 1) + sa * noise(px, py, 9) + 0.32 * noise(px * 2.3, py * 2.3, 4);
+    }
+    bctx.save();
+    bctx.beginPath(); hemiPath(bctx, -1, o, hw, hh, gap); hemiPath(bctx, 1, o, hw, hh, gap); bctx.clip();
+    var gr = bctx.createRadialGradient(o, o - hh * 0.12, hh * 0.05, o, o, hh * 0.62);
+    gr.addColorStop(0, C.brainHi); gr.addColorStop(1, C.brain);
+    bctx.fillStyle = gr; bctx.fillRect(x0, y0, bw, bh);
+    bctx.strokeStyle = rgba(C.brainLine, 0.72); bctx.lineWidth = Math.max(1.3, w / 360); bctx.lineCap = 'round';
+    bctx.beginPath();
+    for (var L = -0.8; L <= 0.81; L += 0.2) {
+      for (j = 0; j < ny - 1; j++) for (i = 0; i < nx - 1; i++) {
+        var A = F[j * nx + i], B = F[j * nx + i + 1], Cc = F[(j + 1) * nx + i + 1], D = F[(j + 1) * nx + i];
+        var idx = (A > L ? 8 : 0) | (B > L ? 4 : 0) | (Cc > L ? 2 : 0) | (D > L ? 1 : 0);
+        if (idx === 0 || idx === 15) continue;
+        var X = x0 + i * step, Y = y0 + j * step;
+        var T = [X + step * (L - A) / (B - A), Y], R = [X + step, Y + step * (L - B) / (Cc - B)];
+        var Bo = [X + step * (L - D) / (Cc - D), Y + step], Le = [X, Y + step * (L - A) / (D - A)];
+        var segs;
+        switch (idx) {
+          case 1: case 14: segs = [Le, Bo]; break;
+          case 2: case 13: segs = [Bo, R]; break;
+          case 3: case 12: segs = [Le, R]; break;
+          case 4: case 11: segs = [T, R]; break;
+          case 6: case 9: segs = [T, Bo]; break;
+          case 7: case 8: segs = [Le, T]; break;
+          case 5: segs = [Le, T, Bo, R]; break;
+          case 10: segs = [T, R, Le, Bo]; break;
+        }
+        for (var q = 0; q < segs.length; q += 2) { bctx.moveTo(segs[q][0], segs[q][1]); bctx.lineTo(segs[q + 1][0], segs[q + 1][1]); }
+      }
+    }
+    bctx.stroke();
+    bctx.restore();
+    bctx.strokeStyle = C.brainLine; bctx.lineWidth = 2.4; bctx.lineJoin = 'round';
+    bctx.beginPath(); hemiPath(bctx, -1, o, hw, hh, gap); bctx.stroke();
+    bctx.beginPath(); hemiPath(bctx, 1, o, hw, hh, gap); bctx.stroke();
+  }
+
+  /* Plutchik's wheel colours for the eight basic emotions, in a bright flat tint */
+  var HUE = ['#ffd23f', '#9ad86b', '#4cc38a', '#5cc8f0', '#6d9ef7', '#b98ae6', '#ff6b5b', '#ffa04d'];
+  var FEAT = '#3b2b22', BLUSH = 'rgba(255,110,140,0.55)', DROP = '#e2f6ff';
+  function drawFace(ctx, x, y, r, kind, act) {
+    var base = HUE[kind];
+    ctx.save(); ctx.translate(x, y);
+    if (act > 0.05) {
+      ctx.fillStyle = rgba(base, 0.3 * act);
+      ctx.beginPath(); ctx.arc(0, 0, r * (1.18 + 0.22 * act), 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.fillStyle = base;
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+    ctx.lineWidth = Math.max(1.5, r * 0.1); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.strokeStyle = FEAT; ctx.fillStyle = FEAT;
+    function P(a, b) { return [a * r, b * r]; }
+    function poly(pts) { ctx.beginPath(); pts.forEach(function (q, k) { var v = P(q[0], q[1]); if (k) ctx.lineTo(v[0], v[1]); else ctx.moveTo(v[0], v[1]); }); ctx.stroke(); }
+    function arc(a, b, s, t0, t1) { ctx.beginPath(); ctx.arc(a * r, b * r, s * r, t0 * Math.PI, t1 * Math.PI); ctx.stroke(); }
+    function oval(a, b, rx, ry, col) { ctx.fillStyle = col; ctx.beginPath(); ctx.ellipse(a * r, b * r, rx * r, ry * r, 0, 0, Math.PI * 2); ctx.fill(); }
+    function eye(a, b, s) { oval(a, b, s, s * 1.12, FEAT); oval(a + s * 0.35, b - s * 0.4, s * 0.38, s * 0.38, '#ffffff'); }
+    function blush() { oval(-0.5, 0.17, 0.15, 0.085, BLUSH); oval(0.5, 0.17, 0.15, 0.085, BLUSH); }
+    function drop(a, b, s) {
+      ctx.fillStyle = DROP; ctx.beginPath(); ctx.moveTo(a * r, (b - s * 1.4) * r);
+      ctx.bezierCurveTo((a + s) * r, (b - 0.2 * s) * r, (a + s) * r, (b + s) * r, a * r, (b + s) * r);
+      ctx.bezierCurveTo((a - s) * r, (b + s) * r, (a - s) * r, (b - 0.2 * s) * r, a * r, (b - s * 1.4) * r); ctx.fill();
+    }
+    function sparkle(a, b, s, col) {
+      ctx.fillStyle = col; ctx.beginPath();
+      for (var k = 0; k < 8; k++) { var rr = (k % 2 ? 0.28 : 1) * s * r, th = k * Math.PI / 4 - Math.PI / 2; ctx.lineTo(a * r + rr * Math.cos(th), b * r + rr * Math.sin(th)); }
+      ctx.closePath(); ctx.fill();
+    }
+    switch (kind) {
+      case 0: /* joy: happy closed eyes, open laugh */
+        blush(); arc(-0.3, 0.02, 0.13, 1.08, 1.92); arc(0.3, 0.02, 0.13, 1.08, 1.92);
+        ctx.fillStyle = FEAT; ctx.beginPath(); ctx.arc(0, 0.18 * r, 0.27 * r, 0, Math.PI); ctx.closePath(); ctx.fill();
+        ctx.save(); ctx.clip(); oval(0, 0.44, 0.15, 0.1, '#ff8fa3'); ctx.restore(); break;
+      case 1: /* trust: soft smile */
+        blush(); eye(-0.3, -0.04, 0.1); eye(0.3, -0.04, 0.1); arc(0, 0.14, 0.18, 0.18, 0.82); break;
+      case 2: /* fear: worried brows, wobbly mouth, sweat drop */
+        eye(-0.3, -0.02, 0.11); eye(0.3, -0.02, 0.11);
+        poly([[-0.46, -0.28], [-0.2, -0.38]]); poly([[0.46, -0.28], [0.2, -0.38]]);
+        poly([[-0.2, 0.36], [-0.1, 0.3], [0, 0.36], [0.1, 0.3], [0.2, 0.36]]);
+        drop(0.62, -0.36, 0.11); break;
+      case 3: /* surprise, the pleasant kind: big bright eyes, raised brows, open smile, sparkles */
+        blush(); eye(-0.3, -0.04, 0.12); eye(0.3, -0.04, 0.12);
+        arc(-0.3, -0.26, 0.13, 1.15, 1.85); arc(0.3, -0.26, 0.13, 1.15, 1.85);
+        ctx.fillStyle = FEAT; ctx.beginPath(); ctx.moveTo(-0.15 * r, 0.22 * r);
+        ctx.quadraticCurveTo(0, 0.17 * r, 0.15 * r, 0.22 * r); ctx.quadraticCurveTo(0.14 * r, 0.48 * r, 0, 0.48 * r);
+        ctx.quadraticCurveTo(-0.14 * r, 0.48 * r, -0.15 * r, 0.22 * r); ctx.fill();
+        ctx.save(); ctx.clip(); oval(0, 0.48, 0.11, 0.08, '#ff8fa3'); ctx.restore();
+        sparkle(-0.62, -0.5, 0.17, '#ffffff'); sparkle(0.64, -0.46, 0.13, '#ffffff'); break;
+      case 4: /* sadness: droopy brows, small frown, a tear */
+        eye(-0.3, -0.02, 0.1); eye(0.3, -0.02, 0.1);
+        poly([[-0.46, -0.24], [-0.2, -0.34]]); poly([[0.46, -0.24], [0.2, -0.34]]);
+        arc(0, 0.46, 0.16, 1.2, 1.8); drop(0.32, 0.22, 0.1); break;
+      case 5: /* disgust: squeezed eyes, tongue out */
+        blush(); poly([[-0.42, -0.14], [-0.22, -0.04], [-0.42, 0.06]]); poly([[0.42, -0.14], [0.22, -0.04], [0.42, 0.06]]);
+        oval(0.06, 0.34, 0.12, 0.12, '#ff8fa3'); poly([[-0.22, 0.27], [0.22, 0.27]]); break;
+      case 6: /* anger: frowning brows, pout, anger mark */
+        eye(-0.3, 0, 0.1); eye(0.3, 0, 0.1);
+        poly([[-0.48, -0.32], [-0.18, -0.2]]); poly([[0.48, -0.32], [0.18, -0.2]]);
+        arc(0, 0.5, 0.16, 1.22, 1.78);
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = Math.max(1.2, r * 0.08);
+        arc(0.48, -0.48, 0.09, 1, 1.5); arc(0.68, -0.48, 0.09, 1.5, 2); arc(0.68, -0.28, 0.09, 0, 0.5); arc(0.48, -0.28, 0.09, 0.5, 1); break;
+      case 7: /* anticipation: bright eyes, cat smile, sparkle */
+        blush(); eye(-0.28, -0.06, 0.11); eye(0.32, -0.06, 0.11);
+        arc(-0.09, 0.2, 0.09, 0, 1); arc(0.09, 0.2, 0.09, 0, 1);
+        sparkle(0.6, -0.56, 0.2, '#ffffff'); break;
+    }
+    ctx.restore();
+  }
+
+  var P = 1.875, LIFE = 5.4;
+  function drawMind(t) {
+    var ctx = M.ctx, w = M.w;
+    if (!w) return;
+    if (t - lastBrain > 0.08 || lastBrain < 0 || reduce) { drawBrain(t); lastBrain = t; }
+    ctx.clearRect(0, 0, w, w);
+    var o = w / 2, r0 = w * 0.205, Re = ringR(w), Rmax = w * 0.485;
+    var ripples = [];
+    for (var n = Math.floor((t - LIFE) / P) + 1; n <= Math.floor(t / P); n++) {
+      var age = t - n * P;
+      if (age < 0 || age > LIFE) continue;
+      var p = age / LIFE;
+      var fi = ((n % 8) + 8) % 8;
+      ripples.push({ r: r0 + (Rmax - r0) * Math.pow(p, 0.8), a: 0.7 * Math.pow(1 - p, 1.25), n: n, p: p, f: (-90 + fi * 45) * Math.PI / 180 });
+    }
+    function lobe(rp, th) { return 0.12 + 0.88 * Math.pow((1 + Math.cos(th - rp.f)) / 2, 6); }
+    function rad(rp, th) {
+      var l = lobe(rp, th);
+      return rp.r + (1.5 + 7 * rp.p) * (0.4 + 0.6 * l) * (0.6 * Math.sin(5 * th + rp.n * 1.7 + t * 0.6) + 0.4 * Math.sin(9 * th - t * 0.9 + rp.n)) + l * w * 0.03 * Math.sin(Math.PI * rp.p);
+    }
+    ctx.lineCap = 'round';
+    ripples.forEach(function (rp) {
+      var prev = null;
+      for (var k = 0; k <= 120; k++) {
+        var th = k / 120 * Math.PI * 2, rr = rad(rp, th);
+        var pt = [o + rr * Math.cos(th), o + rr * Math.sin(th)];
+        if (prev) {
+          var l = lobe(rp, th - Math.PI / 120);
+          ctx.strokeStyle = rgba(C.red, rp.a * l);
+          ctx.lineWidth = 1.1 + 1.8 * l;
+          ctx.beginPath(); ctx.moveTo(prev[0], prev[1]); ctx.lineTo(pt[0], pt[1]); ctx.stroke();
+        }
+        prev = pt;
+      }
+    });
+
+    ctx.drawImage(brain, 0, 0, w, w);
+    var ph = (t % P) / P;
+    ctx.fillStyle = rgba(C.red, Math.pow(1 - ph, 2.5));
+    ctx.beginPath(); ctx.arc(o, o, 3 + 5 * (1 - ph), 0, Math.PI * 2); ctx.fill();
+
+    var fs = Math.max(13, Math.min(18, w * 0.032));
+    var band = w * 0.05;
+    EMO.forEach(function (name, i) {
+      var ang = (-90 + i * 45) * Math.PI / 180, cx = Math.cos(ang), sy = Math.sin(ang);
+      var act = 0;
+      ripples.forEach(function (rp) { var dd = Math.abs(rad(rp, ang) - Re); if (dd < band) act = Math.max(act, (1 - dd / band) * Math.min(1, rp.a * 2) * lobe(rp, ang)); });
+      if (i === hover) act = 1;
+      var mx = o + Re * cx, my = o + Re * sy;
+      if (i === hover) {
+        ctx.strokeStyle = HUE[ORDER[i]]; ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.moveTo(o + r0 * 0.92 * cx, o + r0 * 0.92 * sy);
+        ctx.quadraticCurveTo(o + (r0 + Re) / 2 * Math.cos(ang + 0.35), o + (r0 + Re) / 2 * Math.sin(ang + 0.35), mx, my);
+        ctx.stroke();
+      }
+      var fr = Math.max(14, Math.min(24, w * 0.04)) * (1 + 0.22 * act);
+      drawFace(ctx, mx, my, fr, ORDER[i], act);
+      ctx.font = (act > 0.5 ? '800 ' : '600 ') + fs + 'px "Inter Tight", "Helvetica Neue", Arial, sans-serif';
+      ctx.fillStyle = C.ink;
+      ctx.textAlign = cx > 0.3 ? 'left' : cx < -0.3 ? 'right' : 'center';
+      ctx.textBaseline = sy > 0.3 ? 'top' : sy < -0.3 ? 'bottom' : 'middle';
+      var lr = Re + fr + 10;
+      ctx.fillText(name, o + lr * cx, o + lr * sy);
+    });
+  }
+  mindCanvas.addEventListener('pointermove', function (e) {
+    var r = mindCanvas.getBoundingClientRect(), w = r.width, o = w / 2, Re = ringR(w);
+    var x = e.clientX - r.left, y = e.clientY - r.top, best = -1, bd = w * 0.1;
+    EMO.forEach(function (n, i) {
+      var ang = (-90 + i * 45) * Math.PI / 180, d = Math.hypot(x - (o + Re * Math.cos(ang)), y - (o + Re * Math.sin(ang)));
+      if (d < bd) { bd = d; best = i; }
+    });
+    hover = best;
+    mindCanvas.style.cursor = best >= 0 ? 'pointer' : 'default';
+    if (reduce) drawMind(0);
+  });
+  mindCanvas.addEventListener('pointerleave', function () { hover = -1; if (reduce) drawMind(0); });
+
+  /* ---------- the signal band ---------- */
+  var bandCanvas = document.getElementById('band');
+  var BD = setup(bandCanvas, false);
+  function drawBand(t) {
+    var ctx = BD.ctx, W = BD.w, H = BD.h;
+    if (!W) return;
+    ctx.clearRect(0, 0, W, H);
+    var mid = H / 2;
+    function taper(x) { return Math.pow(Math.sin(Math.PI * x / W), 0.9); }
+    ctx.fillStyle = rgba(C.red, 0.2);
+    for (var x = 0; x < W; x += 4) {
+      var tau = x * 0.011 - t * 1.3;
+      var env = Math.pow(0.5 + 0.5 * Math.sin(x * 0.0045 - t * 0.4), 2);
+      var amp = Math.abs(env * taper(x) * (0.6 * Math.sin(tau * 7.3) + 0.4 * Math.sin(tau * 13.1 + 1))) * H * 0.44;
+      ctx.fillRect(x, mid - amp, 2, Math.max(1, amp * 2));
+    }
+    [[C.red, 1, 2.4, 0], [C.ink, 0.75, 1.3, 1.9], [C.ink, 0.3, 1.1, 3.7]].forEach(function (l) {
+      ctx.strokeStyle = rgba(l[0], l[1]); ctx.lineWidth = l[2];
+      ctx.beginPath();
+      for (var x2 = 0; x2 <= W; x2 += 3) {
+        var y = mid + taper(x2) * H * 0.34 * (0.55 * Math.sin(x2 * 0.0105 - t * 1.05 + l[3]) + 0.3 * Math.sin(x2 * 0.023 - t * 0.7 + l[3] * 1.3) + 0.15 * Math.sin(x2 * 0.047 - t * 1.8));
+        if (x2 === 0) ctx.moveTo(x2, y); else ctx.lineTo(x2, y);
+      }
+      ctx.stroke();
+    });
+  }
+
+  /* ---------- loop ---------- */
+  function sizeAll() { M.size(); BD.size(); lastBrain = -1; }
+  function frame(ms) {
+    var t = ms / 1000;
+    drawMind(t); drawBand(t);
+    if (!reduce) requestAnimationFrame(frame);
+  }
+  readColors(); sizeAll();
+  if (reduce) frame(2600); else requestAnimationFrame(frame);
+  if (window.ResizeObserver) {
+    var ro = new ResizeObserver(function () { sizeAll(); if (reduce) frame(2600); });
+    ro.observe(mindCanvas); ro.observe(bandCanvas);
+  }
+  function retheme() { readColors(); lastBrain = -1; if (reduce) frame(2600); }
+  var mq = window.matchMedia('(prefers-color-scheme: dark)');
+  if (mq.addEventListener) mq.addEventListener('change', retheme);
+  new MutationObserver(retheme).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(retheme);
+})();
+</script>
+</body>
+</html>
