@@ -94,7 +94,6 @@ a { color: inherit; }
 /* emotion names are real text over the canvas, so they can be selected and copied */
 .emo-labels { position: absolute; inset: 0; pointer-events: none; }
 .emo-label { position: absolute; left: 0; top: 0; white-space: nowrap; pointer-events: auto; cursor: text; font-family: var(--f-display); font-weight: 600; line-height: 1; color: var(--ink); }
-.emo-label.on { font-weight: 800; }
 
 /* Signal band */
 .band canvas { display: block; width: 100%; height: 120px; }
@@ -394,7 +393,7 @@ footer .in { padding-block: 64px 40px; font-size: 0.95rem; }
     });
   }
   var brain = document.createElement('canvas'), bctx = brain.getContext('2d');
-  var lastBrain = -1, hover = -1;
+  var lastBrain = -1, hover = -1, hv = [0, 0, 0, 0, 0, 0, 0, 0], lastT = -1;
 
   function hemiPath(ctx, s, o, hw, hh, gap) {
     var cx = o + s * (hw / 2 + gap / 2);
@@ -463,80 +462,184 @@ footer .in { padding-block: 64px 40px; font-size: 0.95rem; }
   /* colours follow Fig. 1 of the Hourglass paper, in a bright flat tint */
   var HUE = { Joy: '#ffd23f', Pleasantness: '#3cc7bd', Fear: '#a77be6', Anger: '#ff6b5b', Sadness: '#6d9ef7', Disgust: '#8cc95b', Eagerness: '#f45fae', Calmness: '#ffa04d' };
   var FEAT = '#3b2b22', BLUSH = 'rgba(255,110,140,0.55)', DROP = '#e2f6ff';
-  function drawFace(ctx, x, y, r, kind, act) {
-    var base = HUE[kind];
+  function lerp(a, b, k) { return a + (b - a) * k; }
+  function sstep(a, b, x) { x = Math.max(0, Math.min(1, (x - a) / (b - a))); return x * x * (3 - 2 * x); }
+  function hexRgb(h) { return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }
+  function mixHex(a, b, k) {
+    var p = hexRgb(a), q = hexRgb(b);
+    return 'rgb(' + Math.round(lerp(p[0], q[0], k)) + ',' + Math.round(lerp(p[1], q[1], k)) + ',' + Math.round(lerp(p[2], q[2], k)) + ')';
+  }
+  /* eyes are drawn as a thick round-capped stroke through EN points: all points in one place make a dot,
+     spread along an arc they make a smiling or a relaxed eye, along a chevron a squeezed eye */
+  var EN = 9;
+  function arcPts(cx, cy, s, a0, a1) {
+    var o = [];
+    for (var k = 0; k < EN; k++) { var a = (a0 + (a1 - a0) * k / (EN - 1)) * Math.PI; o.push([cx + s * Math.cos(a), cy + s * Math.sin(a)]); }
+    return o;
+  }
+  function linePts(q) {
+    var L = [0], o = [], j = 0;
+    for (var k = 1; k < q.length; k++) L.push(L[k - 1] + Math.hypot(q[k][0] - q[k - 1][0], q[k][1] - q[k - 1][1]));
+    for (var k2 = 0; k2 < EN; k2++) {
+      var d = L[L.length - 1] * k2 / (EN - 1);
+      while (j < q.length - 2 && L[j + 1] < d) j++;
+      var f = (d - L[j]) / (L[j + 1] - L[j]);
+      o.push([lerp(q[j][0], q[j + 1][0], f), lerp(q[j][1], q[j + 1][1], f)]);
+    }
+    return o;
+  }
+  function dotPts(x, y) { var o = []; for (var k = 0; k < EN; k++) o.push([x, y]); return o; }
+
+  /* Every face is built from the same parts, given here for the left half and mirrored for the right.
+     Level 0 is the neutral face shared by all eight, level 1 the full emotion, and every level in between
+     is a blend: the mouth bends and opens a little at a time, the eyes curve or grow hearts or stars,
+     brows tilt in, and the tear, sweat drop, anger mark and sparkle grow from nothing. */
+  var NEUTRAL = { eye: dotPts(-0.3, -0.03), lw: 0.2, mouth: { hw: 0.12, cy: 0.3, dc: 0, open: 0, wob: 0 }, brow: [[-0.44, -0.3], [-0.2, -0.3]] };
+  var LOOK = {
+    Joy: { eye: { kind: 'line', pts: arcPts(-0.3, 0.02, 0.13, 1.08, 1.92), lw: 0.1 }, mouth: { hw: 0.27, cy: 0.18, dc: 0, open: 0.27, wob: 0, tongue: 1 }, blush: 1 },
+    Pleasantness: { eye: { kind: 'heart', x: -0.3, y: -0.06, s: 0.15, col: '#ff4f7b' }, mouth: { hw: 0.175, cy: 0.236, dc: 0.104, open: 0, wob: 0 }, blush: 1 },
+    Fear: { eye: { kind: 'line', pts: dotPts(-0.3, -0.02), lw: 0.23, hl: 1 }, mouth: { hw: 0.2, cy: 0.36, dc: 0, open: 0, wob: 0.03 }, brow: [[-0.46, -0.28], [-0.2, -0.38]] },
+    Anger: { eye: { kind: 'line', pts: dotPts(-0.3, 0), lw: 0.2, hl: 1 }, mouth: { hw: 0.123, cy: 0.398, dc: -0.058, open: 0, wob: 0 }, brow: [[-0.48, -0.32], [-0.18, -0.2]] },
+    Sadness: { eye: { kind: 'line', pts: dotPts(-0.3, -0.02), lw: 0.2, hl: 1 }, mouth: { hw: 0.129, cy: 0.366, dc: -0.066, open: 0, wob: 0 }, brow: [[-0.46, -0.24], [-0.2, -0.34]] },
+    Disgust: { eye: { kind: 'line', pts: linePts([[-0.42, -0.14], [-0.22, -0.04], [-0.42, 0.06]]), lw: 0.1 }, mouth: { hw: 0.22, cy: 0.27, dc: 0, open: 0, wob: 0, lick: 1 }, blush: 1 },
+    Eagerness: { eye: { kind: 'star', x: -0.3, y: -0.1, s: 0.21, col: '#fff1a8' }, mouth: { hw: 0.3, cy: 0.17, dc: 0, open: 0.3, wob: 0, tongue: 1 }, blush: 1 },
+    Calmness: { eye: { kind: 'line', pts: arcPts(-0.3, -0.08, 0.12, 0.12, 0.88), lw: 0.1 }, mouth: { hw: 0.108, cy: 0.249, dc: 0.051, open: 0, wob: 0 }, blush: 1 }
+  };
+
+  /* e: 0 neutral .. 1 full emotion. blink: 0..1 eyelid, used only while the face is neutral. */
+  function drawFace(ctx, x, y, r, kind, e, blink) {
+    var base = HUE[kind], L = LOOK[kind];
+    var ke = sstep(0.1, 1, e), km = sstep(0, 0.85, e), kx = sstep(0.5, 1, e), kb = sstep(0.05, 0.5, e), LW = Math.max(1.5, r * 0.1);
     ctx.save(); ctx.translate(x, y);
-    if (act > 0.05) {
-      ctx.fillStyle = rgba(base, 0.3 * act);
-      ctx.beginPath(); ctx.arc(0, 0, r * (1.18 + 0.22 * act), 0, Math.PI * 2); ctx.fill();
+    if (e > 0.02) {
+      ctx.fillStyle = rgba(base, 0.28 * e);
+      ctx.beginPath(); ctx.arc(0, 0, r * (1.1 + 0.14 * e), 0, Math.PI * 2); ctx.fill();
     }
     ctx.fillStyle = base;
     ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
-    ctx.lineWidth = Math.max(1.5, r * 0.1); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.lineWidth = LW; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     ctx.strokeStyle = FEAT; ctx.fillStyle = FEAT;
-    function P(a, b) { return [a * r, b * r]; }
-    function poly(pts) { ctx.beginPath(); pts.forEach(function (q, k) { var v = P(q[0], q[1]); if (k) ctx.lineTo(v[0], v[1]); else ctx.moveTo(v[0], v[1]); }); ctx.stroke(); }
-    function arc(a, b, s, t0, t1) { ctx.beginPath(); ctx.arc(a * r, b * r, s * r, t0 * Math.PI, t1 * Math.PI); ctx.stroke(); }
-    function oval(a, b, rx, ry, col) { ctx.fillStyle = col; ctx.beginPath(); ctx.ellipse(a * r, b * r, rx * r, ry * r, 0, 0, Math.PI * 2); ctx.fill(); }
-    function eye(a, b, s) { oval(a, b, s, s * 1.12, FEAT); oval(a + s * 0.35, b - s * 0.4, s * 0.38, s * 0.38, '#ffffff'); }
-    function blush() { oval(-0.5, 0.17, 0.15, 0.085, BLUSH); oval(0.5, 0.17, 0.15, 0.085, BLUSH); }
+    function oval(a, b, rx, ry, col) { ctx.fillStyle = col; ctx.beginPath(); ctx.ellipse(a * r, b * r, Math.max(0, rx * r), Math.max(0, ry * r), 0, 0, Math.PI * 2); ctx.fill(); }
     function drop(a, b, s) {
       ctx.fillStyle = DROP; ctx.beginPath(); ctx.moveTo(a * r, (b - s * 1.4) * r);
       ctx.bezierCurveTo((a + s) * r, (b - 0.2 * s) * r, (a + s) * r, (b + s) * r, a * r, (b + s) * r);
       ctx.bezierCurveTo((a - s) * r, (b + s) * r, (a - s) * r, (b - 0.2 * s) * r, a * r, (b - s * 1.4) * r); ctx.fill();
     }
-    function sparkle(a, b, s, col) {
-      ctx.fillStyle = col; ctx.beginPath();
-      for (var k = 0; k < 8; k++) { var rr = (k % 2 ? 0.28 : 1) * s * r, th = k * Math.PI / 4 - Math.PI / 2; ctx.lineTo(a * r + rr * Math.cos(th), b * r + rr * Math.sin(th)); }
+    function grow(a, b, k, fn) {
+      if (k < 0.02) return;
+      ctx.save(); ctx.translate(a * r, b * r); ctx.scale(k, k); ctx.translate(-a * r, -b * r); fn(); ctx.restore();
+    }
+    function hilite(cx, cy, lw, alpha) {
+      if (alpha < 0.02) return;
+      ctx.globalAlpha = alpha; oval(cx + 0.175 * lw, cy - 0.2 * lw, 0.19 * lw, 0.19 * lw, '#ffffff'); ctx.globalAlpha = 1;
+    }
+    function strokeEye(pts, lw, m) {
+      ctx.lineWidth = lw * r; ctx.strokeStyle = FEAT; ctx.beginPath();
+      pts.forEach(function (p, k) { if (k) ctx.lineTo(m * p[0] * r, p[1] * r); else ctx.moveTo(m * p[0] * r, p[1] * r); });
+      ctx.stroke();
+      ctx.fillStyle = FEAT;
+      [pts[0], pts[EN - 1]].forEach(function (p) { ctx.beginPath(); ctx.arc(m * p[0] * r, p[1] * r, lw * r / 2, 0, Math.PI * 2); ctx.fill(); });
+      ctx.lineWidth = LW;
+    }
+
+    /* blush */
+    if (L.blush && e > 0.02) { ctx.globalAlpha = e; oval(-0.5, 0.17, 0.15, 0.085, BLUSH); oval(0.5, 0.17, 0.15, 0.085, BLUSH); ctx.globalAlpha = 1; }
+
+    /* eyes */
+    var nb = blink * (1 - ke);
+    var npts = NEUTRAL.eye.map(function (p, k) { return [p[0] + (k / (EN - 1) - 0.5) * 0.2 * nb, p[1]]; }), nlw = NEUTRAL.lw - 0.13 * nb;
+    var E = L.eye, mid = (EN - 1) / 2;
+    [1, -1].forEach(function (m) {
+      if (E.kind === 'line' || ke < 0.01) {
+        var tp = E.kind === 'line' ? E.pts : NEUTRAL.eye, tl = E.kind === 'line' ? E.lw : NEUTRAL.lw, k = E.kind === 'line' ? ke : 0;
+        var pts = npts.map(function (p, j) { return [lerp(p[0], tp[j][0], k), lerp(p[1], tp[j][1], k)]; }), lw = lerp(nlw, tl, k);
+        strokeEye(pts, lw, m);
+        hilite(m * pts[mid][0], pts[mid][1], lw, (1 - nb) * (E.hl ? 1 : 1 - Math.min(1, 2.5 * k)));
+        return;
+      }
+      var cx = m * lerp(-0.3, E.x, ke), cy = lerp(-0.03, E.y, ke);
+      ctx.fillStyle = mixHex(FEAT, E.col, ke);
+      ctx.beginPath();
+      if (E.kind === 'heart') {
+        /* a circle drawn with the same two curves as the heart, so one bends into the other */
+        var R = 0.1, S = E.s, X = cx * r;
+        var q = function (cr, hr) { return lerp(cr * R, hr * S, ke) * r; };
+        var Y = cy * r;
+        ctx.moveTo(X, Y + q(1, 0.9));
+        ctx.bezierCurveTo(X - q(1.333, 1.3), Y + q(1, 0.1), X - q(1.333, 0.9), Y + q(-1, -0.95), X, Y + q(-1, -0.35));
+        ctx.bezierCurveTo(X + q(1.333, 0.9), Y + q(-1, -0.95), X + q(1.333, 1.3), Y + q(1, 0.1), X, Y + q(1, 0.9));
+        ctx.fill();
+      } else {
+        /* star: a ten-sided dot whose every other corner pulls out into a point */
+        var ro = lerp(0.1, E.s, ke) * r, ri = lerp(0.1, 0.46 * E.s, ke) * r;
+        for (var k = 0; k < 10; k++) { var rr = k % 2 ? ri : ro, th = -Math.PI / 2 + k * Math.PI / 5; ctx.lineTo(cx * r + rr * Math.cos(th), cy * r + rr * Math.sin(th)); }
+        ctx.closePath(); ctx.fill();
+        if (ke > 0.05) { ctx.lineWidth = Math.max(1, r * 0.05) * ke; ctx.strokeStyle = FEAT; ctx.stroke(); ctx.lineWidth = LW; }
+      }
+      hilite(cx, cy, 0.2, 1 - Math.min(1, 2.5 * ke));
+    });
+
+    /* brows tilt in and darken */
+    if (L.brow && kb > 0.01) {
+      ctx.globalAlpha = kb; ctx.strokeStyle = FEAT;
+      [1, -1].forEach(function (m) {
+        var b0 = NEUTRAL.brow, b1 = L.brow;
+        ctx.beginPath();
+        ctx.moveTo(m * lerp(b0[0][0], b1[0][0], ke) * r, lerp(b0[0][1], b1[0][1], ke) * r);
+        ctx.lineTo(m * lerp(b0[1][0], b1[1][0], ke) * r, lerp(b0[1][1], b1[1][1], ke) * r);
+        ctx.stroke();
+      });
+      ctx.globalAlpha = 1;
+    }
+
+    /* mouth: corners at height cy, the middle dc lower (a smile) or higher (a frown), open by up to `open` */
+    var a = NEUTRAL.mouth, b = L.mouth;
+    var hw = lerp(a.hw, b.hw, km), my = lerp(a.cy, b.cy, km), dc = b.dc * km, wob = b.wob * km, open = b.open * Math.pow(km, 1.4);
+    if (b.lick) { var kl = sstep(0.3, 1, e); if (kl > 0.02) oval(0.06 * kl, my + 0.07 * kl, 0.12 * kl, 0.12 * kl, '#ff8fa3'); }
+    var up = [], lo = [], NM = 16;
+    for (var j = 0; j <= NM; j++) {
+      var u = -1 + 2 * j / NM, yy = my + dc * (1 - u * u) + wob * (Math.cos(2 * Math.PI * u) - 1);
+      up.push([u * hw * r, yy * r]); lo.push([u * hw * r, (yy + open * Math.pow(1 - u * u, 0.6)) * r]);
+    }
+    ctx.strokeStyle = FEAT; ctx.fillStyle = FEAT; ctx.lineWidth = LW;
+    ctx.beginPath(); up.forEach(function (p, k) { if (k) ctx.lineTo(p[0], p[1]); else ctx.moveTo(p[0], p[1]); });
+    if (open * r > 0.5) {
+      for (var j2 = NM; j2 >= 0; j2--) ctx.lineTo(lo[j2][0], lo[j2][1]);
       ctx.closePath(); ctx.fill();
+      if (b.tongue) { ctx.save(); ctx.clip(); oval(0, my + open - 0.01, 0.55 * hw, 0.35 * open, '#ff8fa3'); ctx.restore(); }
     }
-    function heart(a, b, s, col) {
-      var X = a * r, Y = b * r, S = s * r;
-      ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(X, Y + S * 0.9);
-      ctx.bezierCurveTo(X - S * 1.3, Y + S * 0.1, X - S * 0.9, Y - S * 0.95, X, Y - S * 0.35);
-      ctx.bezierCurveTo(X + S * 0.9, Y - S * 0.95, X + S * 1.3, Y + S * 0.1, X, Y + S * 0.9); ctx.fill();
-    }
-    function star(a, b, s, col) {
-      var X = a * r, Y = b * r, S = s * r;
-      ctx.save(); ctx.beginPath();
-      for (var k = 0; k < 10; k++) { var rr = k % 2 ? S * 0.46 : S, th = -Math.PI / 2 + k * Math.PI / 5; ctx.lineTo(X + rr * Math.cos(th), Y + rr * Math.sin(th)); }
-      ctx.closePath(); ctx.fillStyle = col; ctx.fill();
-      ctx.lineWidth = Math.max(1, r * 0.05); ctx.strokeStyle = FEAT; ctx.stroke(); ctx.restore();
-    }
-    switch (kind) {
-      case 'Joy': /* happy closed eyes, open laugh */
-        blush(); arc(-0.3, 0.02, 0.13, 1.08, 1.92); arc(0.3, 0.02, 0.13, 1.08, 1.92);
-        ctx.fillStyle = FEAT; ctx.beginPath(); ctx.arc(0, 0.18 * r, 0.27 * r, 0, Math.PI); ctx.closePath(); ctx.fill();
-        ctx.save(); ctx.clip(); oval(0, 0.44, 0.15, 0.1, '#ff8fa3'); ctx.restore(); break;
-      case 'Pleasantness': /* heart eyes, soft smile */
-        blush(); heart(-0.3, -0.06, 0.15, '#ff4f7b'); heart(0.3, -0.06, 0.15, '#ff4f7b'); arc(0, 0.14, 0.2, 0.16, 0.84); break;
-      case 'Calmness': /* closed relaxed eyes, gentle smile */
-        blush(); arc(-0.3, -0.08, 0.12, 0.12, 0.88); arc(0.3, -0.08, 0.12, 0.12, 0.88); arc(0, 0.16, 0.14, 0.22, 0.78); break;
-      case 'Fear': /* worried brows, wobbly mouth, sweat drop */
-        eye(-0.3, -0.02, 0.11); eye(0.3, -0.02, 0.11);
-        poly([[-0.46, -0.28], [-0.2, -0.38]]); poly([[0.46, -0.28], [0.2, -0.38]]);
-        poly([[-0.2, 0.36], [-0.1, 0.3], [0, 0.36], [0.1, 0.3], [0.2, 0.36]]);
-        drop(0.62, -0.36, 0.11); break;
-      case 'Eagerness': /* star eyes, big open grin, a sparkle */
-        blush(); star(-0.3, -0.1, 0.21, '#fff1a8'); star(0.3, -0.1, 0.21, '#fff1a8');
-        ctx.fillStyle = FEAT; ctx.beginPath(); ctx.arc(0, 0.17 * r, 0.3 * r, 0, Math.PI); ctx.closePath(); ctx.fill();
-        ctx.save(); ctx.clip(); oval(0, 0.45, 0.16, 0.1, '#ff8fa3'); ctx.restore();
-        sparkle(0.64, -0.56, 0.16, '#ffffff'); break;
-      case 'Sadness': /* droopy brows, small frown, a tear */
-        eye(-0.3, -0.02, 0.1); eye(0.3, -0.02, 0.1);
-        poly([[-0.46, -0.24], [-0.2, -0.34]]); poly([[0.46, -0.24], [0.2, -0.34]]);
-        arc(0, 0.46, 0.16, 1.2, 1.8); drop(0.32, 0.22, 0.1); break;
-      case 'Disgust': /* squeezed eyes, tongue out */
-        blush(); poly([[-0.42, -0.14], [-0.22, -0.04], [-0.42, 0.06]]); poly([[0.42, -0.14], [0.22, -0.04], [0.42, 0.06]]);
-        oval(0.06, 0.34, 0.12, 0.12, '#ff8fa3'); poly([[-0.22, 0.27], [0.22, 0.27]]); break;
-      case 'Anger': /* frowning brows, pout, anger mark */
-        eye(-0.3, 0, 0.1); eye(0.3, 0, 0.1);
-        poly([[-0.48, -0.32], [-0.18, -0.2]]); poly([[0.48, -0.32], [0.18, -0.2]]);
-        arc(0, 0.5, 0.16, 1.22, 1.78);
-        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = Math.max(1.2, r * 0.08);
-        arc(0.48, -0.48, 0.09, 1, 1.5); arc(0.68, -0.48, 0.09, 1.5, 2); arc(0.68, -0.28, 0.09, 0, 0.5); arc(0.48, -0.28, 0.09, 0.5, 1); break;
-    }
+    ctx.stroke();
+
+    /* little extras grow in near the peak */
+    if (kind === 'Fear') grow(0.62, -0.36, kx, function () { drop(0.62, -0.36, 0.11); });
+    if (kind === 'Sadness') grow(0.32, 0.22, kx, function () { drop(0.32, 0.1 + 0.12 * kx, 0.1); });
+    if (kind === 'Eagerness') grow(0.64, -0.56, kx, function () {
+      ctx.translate(0.64 * r, -0.56 * r); ctx.rotate((1 - kx) * 1.2); ctx.translate(-0.64 * r, 0.56 * r);
+      ctx.fillStyle = '#ffffff'; ctx.beginPath();
+      for (var k = 0; k < 8; k++) { var rr = (k % 2 ? 0.28 : 1) * 0.16 * r, th = k * Math.PI / 4 - Math.PI / 2; ctx.lineTo(0.64 * r + rr * Math.cos(th), -0.56 * r + rr * Math.sin(th)); }
+      ctx.closePath(); ctx.fill();
+    });
+    if (kind === 'Anger') grow(0.58, -0.38, kx, function () {
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = Math.max(1.2, r * 0.08);
+      function arc(p, q2, s, t0, t1) { ctx.beginPath(); ctx.arc(p * r, q2 * r, s * r, t0 * Math.PI, t1 * Math.PI); ctx.stroke(); }
+      arc(0.48, -0.48, 0.09, 1, 1.5); arc(0.68, -0.48, 0.09, 1.5, 2); arc(0.68, -0.28, 0.09, 0, 0.5); arc(0.48, -0.28, 0.09, 0.5, 1);
+    });
     ctx.restore();
+  }
+
+  /* Each wave is aimed at one emotion. When the wave reaches that face, the face turns quickly (and smoothly)
+     into its emotion, and once the wave has passed it is back to neutral. tau is in seconds from the moment the
+     wave reaches the face centre; the wave line takes about 0.6 s to cross a face radius. */
+  function waveLevel(tau) { return sstep(-0.6, -0.2, tau) * (1 - sstep(0.5, 1.0, tau)); }
+  var hitAge = 0, hitW = 0;
+  function waveHitAge(w) {
+    /* age at which the wave aimed at a face reaches the ring, from the ripple radius formula in drawMind */
+    var r0 = w * 0.205, Rmax = w * 0.485, Re = ringR(w), lo = 0, hi = 1;
+    for (var k = 0; k < 30; k++) {
+      var p = (lo + hi) / 2;
+      if (r0 + (Rmax - r0) * Math.pow(p, 0.8) + w * 0.03 * Math.sin(Math.PI * p) < Re) lo = p; else hi = p;
+    }
+    return lo * LIFE;
   }
 
   var P = 1.875, LIFE = 5.4;
@@ -580,12 +683,20 @@ footer .in { padding-block: 64px 40px; font-size: 0.95rem; }
     ctx.fillStyle = rgba(C.red, Math.pow(1 - ph, 2.5));
     ctx.beginPath(); ctx.arc(o, o, 3 + 5 * (1 - ph), 0, Math.PI * 2); ctx.fill();
 
-    var band = w * 0.05;
+    var dt = lastT < 0 ? 0 : Math.max(0, Math.min(0.1, t - lastT)); lastT = t;
+    if (hitW !== w) { hitW = w; hitAge = waveHitAge(w); }
     EMO.forEach(function (name, i) {
       var ang = (-90 + i * 45) * Math.PI / 180, cx = Math.cos(ang), sy = Math.sin(ang);
-      var act = 0;
-      ripples.forEach(function (rp) { var dd = Math.abs(rad(rp, ang) - Re); if (dd < band) act = Math.max(act, (1 - dd / band) * Math.min(1, rp.a * 2) * lobe(rp, ang)); });
-      if (i === hover) act = 1;
+      /* the latest wave aimed at this face is wave n = i + 8k */
+      var kk = Math.floor((t - hitAge + 1.1 - i * P) / (8 * P)), tau = t - (i + 8 * kk) * P - hitAge;
+      /* hovering a face eases it into its emotion and back */
+      hv[i] += ((i === hover ? 1 : 0) - hv[i]) * (1 - Math.exp(-8 * dt));
+      var e = reduce ? 1 : Math.max(waveLevel(tau), hv[i]), blink = 0;
+      if (!reduce && e < 0.02) {
+        /* idle blink while neutral, on a different rhythm for every face */
+        var per = 3.2 + ((i * 0.618) % 1) * 2.6, ph = (t + i * 1.37) % per;
+        if (ph < 0.16) blink = Math.sin(Math.PI * ph / 0.16);
+      }
       var mx = o + Re * cx, my = o + Re * sy;
       if (i === hover) {
         ctx.strokeStyle = HUE[name]; ctx.lineWidth = 2.5;
@@ -593,10 +704,11 @@ footer .in { padding-block: 64px 40px; font-size: 0.95rem; }
         ctx.quadraticCurveTo(o + (r0 + Re) / 2 * Math.cos(ang + 0.35), o + (r0 + Re) / 2 * Math.sin(ang + 0.35), mx, my);
         ctx.stroke();
       }
-      var fr = Math.max(14, Math.min(24, w * 0.04)) * (1 + 0.22 * act);
-      drawFace(ctx, mx, my, fr, name, act);
-      var on = act > 0.5;
-      if (labels[i]._on !== on) { labels[i]._on = on; labels[i].classList.toggle('on', on); }
+      var fr = Math.max(14, Math.min(24, w * 0.04)) * (1 + 0.18 * e);
+      drawFace(ctx, mx, my, fr, name, e, blink);
+      /* the name gets bolder with the emotion */
+      var fw = reduce ? (i === hover ? 800 : 600) : Math.round((600 + 200 * e) / 25) * 25;
+      if (labels[i]._fw !== fw) { labels[i]._fw = fw; labels[i].style.fontWeight = fw; }
     });
   }
   mindCanvas.addEventListener('pointermove', function (e) {
