@@ -89,7 +89,12 @@ a { color: inherit; }
 .btn:hover { transform: translate(-3px, -3px); box-shadow: 6px 6px 0 var(--red); }
 .btn svg { width: 18px; height: 18px; }
 .mind { margin: 0; }
-.mind canvas { display: block; width: 100%; max-width: 600px; aspect-ratio: 1; margin-inline: auto; touch-action: pan-y; }
+.mind-box { position: relative; width: 100%; max-width: 600px; margin-inline: auto; }
+.mind canvas { display: block; width: 100%; aspect-ratio: 1; touch-action: pan-y; }
+/* emotion names are real text over the canvas, so they can be selected and copied */
+.emo-labels { position: absolute; inset: 0; pointer-events: none; }
+.emo-label { position: absolute; left: 0; top: 0; white-space: nowrap; pointer-events: auto; cursor: text; font-family: var(--f-display); font-weight: 600; line-height: 1; color: var(--ink); }
+.emo-label.on { font-weight: 800; }
 
 /* Signal band */
 .band canvas { display: block; width: 100%; height: 120px; }
@@ -152,7 +157,11 @@ h2 { margin: 0 0 24px; font: 600 clamp(1.8rem, 3.6vw, 2.6rem)/1.1 var(--f-displa
 .plate img { display: block; width: auto; height: auto; max-width: 100%; max-height: 56px; }
 .org-name { display: flex; align-items: center; justify-content: center; gap: 12px; flex: 1; margin: 0; text-align: center; text-wrap: balance; padding: 10px 14px 12px; font: 600 0.98rem/1.3 var(--f-display); letter-spacing: -0.01em; transition: background-color 0.18s, color 0.18s; }
 .org:hover .org-name, .org:active .org-name, .org:focus-within .org-name { background: var(--red); color: var(--on-red); }
-.lab-mark { flex: none; display: grid; place-items: center; width: 40px; height: 34px; padding: 2px; border-radius: 8px; background: var(--plate); }
+.lab-mark { flex: none; display: grid; place-items: center; width: 40px; height: 34px; }
+/* CoAI is purple: shown in white on the red hover strip and in dark mode so it stays readable */
+.org:hover .lab-mark img.mono, .org:active .lab-mark img.mono, .org:focus-within .lab-mark img.mono { filter: brightness(0) invert(1); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .lab-mark img.mono { filter: brightness(0) invert(1); } }
+:root[data-theme="dark"] .lab-mark img.mono { filter: brightness(0) invert(1); }
 .lab-mark img { display: block; width: auto; height: auto; max-width: 100%; max-height: 100%; }
 @media (max-width: 420px) { .lab-mark { width: 40px; height: 34px; } .plate { height: 96px; padding: 16px; } .plate img { max-height: 52px; } .org-name { padding: 12px 12px 14px; font-size: 0.98rem; } }
 @media (prefers-reduced-motion: reduce) {
@@ -193,7 +202,10 @@ footer .in { padding-block: 64px 40px; font-size: 0.95rem; }
       <a class="btn" href="#events">View events<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v13M6 12l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square"/></svg></a>
     </div>
     <figure class="mind">
-      <canvas id="mind" role="img" aria-label="A brain at the centre sends waves out to a ring of eight emotions: joy, trust, fear, surprise, sadness, disgust, anger and anticipation"></canvas>
+      <div class="mind-box">
+        <canvas id="mind" role="img" aria-label="A brain at the centre sends waves out to a ring of eight emotions from the Hourglass model, each facing its opposite"></canvas>
+        <div class="emo-labels" id="emo-labels"></div>
+      </div>
     </figure>
   </div>
 </header>
@@ -239,7 +251,7 @@ footer .in { padding-block: 64px 40px; font-size: 0.95rem; }
         </li>
         <li class="org" data-card>
           <a class="plate" href="https://sentic.net/" target="_blank" rel="noopener" aria-label="SenticNet, Nanyang Technological University"><img src="assets/logos/ntu.png" alt="Nanyang Technological University" width="500" height="180"></a>
-          <p class="org-name"><span class="lab-mark"><img src="assets/labs/senticnet.png" alt="" width="131" height="160"></span>SenticNet</p>
+          <p class="org-name"><span class="lab-mark"><img src="assets/labs/senticnet.png" alt="" width="164" height="200"></span>SenticNet</p>
         </li>
         <li class="org" data-card>
           <a class="plate" href="https://haofei.vip/" target="_blank" rel="noopener" aria-label="Department of Computer Science, University of Oxford"><img src="assets/logos/oxford.png" alt="University of Oxford" width="500" height="146"></a>
@@ -259,7 +271,7 @@ footer .in { padding-block: 64px 40px; font-size: 0.95rem; }
         </li>
         <li class="org" data-card>
           <a class="plate" href="https://coai.cs.tsinghua.edu.cn/" target="_blank" rel="noopener" aria-label="CoAI Group, Tsinghua University"><img src="assets/logos/tsinghua.png" alt="Tsinghua University" width="500" height="157"></a>
-          <p class="org-name"><span class="lab-mark"><img src="assets/labs/coai.png" alt="" width="240" height="111"></span>CoAI Group</p>
+          <p class="org-name"><span class="lab-mark"><img class="mono" src="assets/labs/coai.png" alt="" width="300" height="139"></span>CoAI Group</p>
         </li>
         <li class="org" data-card>
           <a class="plate" href="https://kiinformatik.mri.tum.de/en/chair-health-informatics" target="_blank" rel="noopener" aria-label="Chair of Health Informatics, Technical University of Munich"><img src="assets/logos/tum.png" alt="TUM Universitätsklinikum" width="412" height="93"></a>
@@ -353,14 +365,34 @@ footer .in { padding-block: 64px 40px; font-size: 0.95rem; }
   }
 
   /* ---------- the mind figure ---------- */
-  /* face kinds: 0 joy, 1 trust, 2 fear, 3 surprise, 4 sadness, 5 disgust, 6 anger, 7 anticipation.
-     Around the ring, positive and negative alternate, four of each, with no two similar colours side by side. */
-  var NAMES = ['Joy', 'Trust', 'Fear', 'Surprise', 'Sadness', 'Disgust', 'Anger', 'Anticipation'];
-  /* clockwise from the top; the left and right slots take short names so the labels fit the canvas */
-  var ORDER = [7, 4, 1, 6, 3, 5, 0, 2];
-  var EMO = ORDER.map(function (k) { return NAMES[k]; });
+  /* The eight emotions of the Hourglass model (Susanto, Livingstone, Ng and Cambria 2020), four opposing pairs:
+     joy/sadness, pleasantness/disgust, eagerness/fear, calmness/anger. Clockwise from the top, in the same places
+     as Fig. 1 of Saini et al. (Findings of EMNLP 2026); each emotion sits opposite its partner (slot i and slot i+4). */
+  var EMO = ['Joy', 'Pleasantness', 'Fear', 'Anger', 'Sadness', 'Disgust', 'Eagerness', 'Calmness'];
   var mindCanvas = document.getElementById('mind');
   var M = setup(mindCanvas, true);
+  var labelBox = document.getElementById('emo-labels');
+  var labels = EMO.map(function (n) {
+    var el = document.createElement('span'); el.className = 'emo-label'; el.textContent = n; labelBox.appendChild(el); return el;
+  });
+  function placeLabels() {
+    var w = M.w; if (!w) return;
+    var o = w / 2, Re = ringR(w), fs = Math.max(13, Math.min(18, w * 0.032)), fr = Math.max(14, Math.min(24, w * 0.04)) * 1.1;
+    EMO.forEach(function (n, i) {
+      var ang = (-90 + i * 45) * Math.PI / 180, cx = Math.cos(ang), sy = Math.sin(ang), x, y, tx, ty;
+      if (Math.abs(cx) > 0.9) {
+        /* left and right slots: the name goes under the face so long names stay inside the figure */
+        x = o + Re * cx; y = o + Re * sy + fr + 8; tx = -50; ty = 0;
+      } else {
+        var lr = Re + fr + 10;
+        x = o + lr * cx; y = o + lr * sy;
+        tx = cx > 0.3 ? 0 : cx < -0.3 ? -100 : -50;
+        ty = sy > 0.3 ? 0 : sy < -0.3 ? -100 : -50;
+      }
+      labels[i].style.fontSize = fs + 'px';
+      labels[i].style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) translate(' + tx + '%,' + ty + '%)';
+    });
+  }
   var brain = document.createElement('canvas'), bctx = brain.getContext('2d');
   var lastBrain = -1, hover = -1;
 
@@ -428,8 +460,8 @@ footer .in { padding-block: 64px 40px; font-size: 0.95rem; }
     bctx.beginPath(); hemiPath(bctx, 1, o, hw, hh, gap); bctx.stroke();
   }
 
-  /* Plutchik's wheel colours for the eight basic emotions, in a bright flat tint */
-  var HUE = ['#ffd23f', '#9ad86b', '#4cc38a', '#5cc8f0', '#6d9ef7', '#b98ae6', '#ff6b5b', '#ffa04d'];
+  /* colours follow Fig. 1 of the Hourglass paper, in a bright flat tint */
+  var HUE = { Joy: '#ffd23f', Pleasantness: '#3cc7bd', Fear: '#a77be6', Anger: '#ff6b5b', Sadness: '#6d9ef7', Disgust: '#8cc95b', Eagerness: '#f45fae', Calmness: '#ffa04d' };
   var FEAT = '#3b2b22', BLUSH = 'rgba(255,110,140,0.55)', DROP = '#e2f6ff';
   function drawFace(ctx, x, y, r, kind, act) {
     var base = HUE[kind];
@@ -458,43 +490,51 @@ footer .in { padding-block: 64px 40px; font-size: 0.95rem; }
       for (var k = 0; k < 8; k++) { var rr = (k % 2 ? 0.28 : 1) * s * r, th = k * Math.PI / 4 - Math.PI / 2; ctx.lineTo(a * r + rr * Math.cos(th), b * r + rr * Math.sin(th)); }
       ctx.closePath(); ctx.fill();
     }
+    function heart(a, b, s, col) {
+      var X = a * r, Y = b * r, S = s * r;
+      ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(X, Y + S * 0.9);
+      ctx.bezierCurveTo(X - S * 1.3, Y + S * 0.1, X - S * 0.9, Y - S * 0.95, X, Y - S * 0.35);
+      ctx.bezierCurveTo(X + S * 0.9, Y - S * 0.95, X + S * 1.3, Y + S * 0.1, X, Y + S * 0.9); ctx.fill();
+    }
+    function star(a, b, s, col) {
+      var X = a * r, Y = b * r, S = s * r;
+      ctx.save(); ctx.beginPath();
+      for (var k = 0; k < 10; k++) { var rr = k % 2 ? S * 0.46 : S, th = -Math.PI / 2 + k * Math.PI / 5; ctx.lineTo(X + rr * Math.cos(th), Y + rr * Math.sin(th)); }
+      ctx.closePath(); ctx.fillStyle = col; ctx.fill();
+      ctx.lineWidth = Math.max(1, r * 0.05); ctx.strokeStyle = FEAT; ctx.stroke(); ctx.restore();
+    }
     switch (kind) {
-      case 0: /* joy: happy closed eyes, open laugh */
+      case 'Joy': /* happy closed eyes, open laugh */
         blush(); arc(-0.3, 0.02, 0.13, 1.08, 1.92); arc(0.3, 0.02, 0.13, 1.08, 1.92);
         ctx.fillStyle = FEAT; ctx.beginPath(); ctx.arc(0, 0.18 * r, 0.27 * r, 0, Math.PI); ctx.closePath(); ctx.fill();
         ctx.save(); ctx.clip(); oval(0, 0.44, 0.15, 0.1, '#ff8fa3'); ctx.restore(); break;
-      case 1: /* trust: soft smile */
-        blush(); eye(-0.3, -0.04, 0.1); eye(0.3, -0.04, 0.1); arc(0, 0.14, 0.18, 0.18, 0.82); break;
-      case 2: /* fear: worried brows, wobbly mouth, sweat drop */
+      case 'Pleasantness': /* heart eyes, soft smile */
+        blush(); heart(-0.3, -0.06, 0.15, '#ff4f7b'); heart(0.3, -0.06, 0.15, '#ff4f7b'); arc(0, 0.14, 0.2, 0.16, 0.84); break;
+      case 'Calmness': /* closed relaxed eyes, gentle smile */
+        blush(); arc(-0.3, -0.08, 0.12, 0.12, 0.88); arc(0.3, -0.08, 0.12, 0.12, 0.88); arc(0, 0.16, 0.14, 0.22, 0.78); break;
+      case 'Fear': /* worried brows, wobbly mouth, sweat drop */
         eye(-0.3, -0.02, 0.11); eye(0.3, -0.02, 0.11);
         poly([[-0.46, -0.28], [-0.2, -0.38]]); poly([[0.46, -0.28], [0.2, -0.38]]);
         poly([[-0.2, 0.36], [-0.1, 0.3], [0, 0.36], [0.1, 0.3], [0.2, 0.36]]);
         drop(0.62, -0.36, 0.11); break;
-      case 3: /* surprise, the pleasant kind: big bright eyes, raised brows, open smile, sparkles */
-        blush(); eye(-0.3, -0.04, 0.12); eye(0.3, -0.04, 0.12);
-        arc(-0.3, -0.26, 0.13, 1.15, 1.85); arc(0.3, -0.26, 0.13, 1.15, 1.85);
-        ctx.fillStyle = FEAT; ctx.beginPath(); ctx.moveTo(-0.15 * r, 0.22 * r);
-        ctx.quadraticCurveTo(0, 0.17 * r, 0.15 * r, 0.22 * r); ctx.quadraticCurveTo(0.14 * r, 0.48 * r, 0, 0.48 * r);
-        ctx.quadraticCurveTo(-0.14 * r, 0.48 * r, -0.15 * r, 0.22 * r); ctx.fill();
-        ctx.save(); ctx.clip(); oval(0, 0.48, 0.11, 0.08, '#ff8fa3'); ctx.restore();
-        sparkle(-0.62, -0.5, 0.17, '#ffffff'); sparkle(0.64, -0.46, 0.13, '#ffffff'); break;
-      case 4: /* sadness: droopy brows, small frown, a tear */
+      case 'Eagerness': /* star eyes, big open grin, a sparkle */
+        blush(); star(-0.3, -0.1, 0.21, '#fff1a8'); star(0.3, -0.1, 0.21, '#fff1a8');
+        ctx.fillStyle = FEAT; ctx.beginPath(); ctx.arc(0, 0.17 * r, 0.3 * r, 0, Math.PI); ctx.closePath(); ctx.fill();
+        ctx.save(); ctx.clip(); oval(0, 0.45, 0.16, 0.1, '#ff8fa3'); ctx.restore();
+        sparkle(0.64, -0.56, 0.16, '#ffffff'); break;
+      case 'Sadness': /* droopy brows, small frown, a tear */
         eye(-0.3, -0.02, 0.1); eye(0.3, -0.02, 0.1);
         poly([[-0.46, -0.24], [-0.2, -0.34]]); poly([[0.46, -0.24], [0.2, -0.34]]);
         arc(0, 0.46, 0.16, 1.2, 1.8); drop(0.32, 0.22, 0.1); break;
-      case 5: /* disgust: squeezed eyes, tongue out */
+      case 'Disgust': /* squeezed eyes, tongue out */
         blush(); poly([[-0.42, -0.14], [-0.22, -0.04], [-0.42, 0.06]]); poly([[0.42, -0.14], [0.22, -0.04], [0.42, 0.06]]);
         oval(0.06, 0.34, 0.12, 0.12, '#ff8fa3'); poly([[-0.22, 0.27], [0.22, 0.27]]); break;
-      case 6: /* anger: frowning brows, pout, anger mark */
+      case 'Anger': /* frowning brows, pout, anger mark */
         eye(-0.3, 0, 0.1); eye(0.3, 0, 0.1);
         poly([[-0.48, -0.32], [-0.18, -0.2]]); poly([[0.48, -0.32], [0.18, -0.2]]);
         arc(0, 0.5, 0.16, 1.22, 1.78);
         ctx.strokeStyle = '#ffffff'; ctx.lineWidth = Math.max(1.2, r * 0.08);
         arc(0.48, -0.48, 0.09, 1, 1.5); arc(0.68, -0.48, 0.09, 1.5, 2); arc(0.68, -0.28, 0.09, 0, 0.5); arc(0.48, -0.28, 0.09, 0.5, 1); break;
-      case 7: /* anticipation: bright eyes, cat smile, sparkle */
-        blush(); eye(-0.28, -0.06, 0.11); eye(0.32, -0.06, 0.11);
-        arc(-0.09, 0.2, 0.09, 0, 1); arc(0.09, 0.2, 0.09, 0, 1);
-        sparkle(0.6, -0.56, 0.2, '#ffffff'); break;
     }
     ctx.restore();
   }
@@ -540,7 +580,6 @@ footer .in { padding-block: 64px 40px; font-size: 0.95rem; }
     ctx.fillStyle = rgba(C.red, Math.pow(1 - ph, 2.5));
     ctx.beginPath(); ctx.arc(o, o, 3 + 5 * (1 - ph), 0, Math.PI * 2); ctx.fill();
 
-    var fs = Math.max(13, Math.min(18, w * 0.032));
     var band = w * 0.05;
     EMO.forEach(function (name, i) {
       var ang = (-90 + i * 45) * Math.PI / 180, cx = Math.cos(ang), sy = Math.sin(ang);
@@ -549,19 +588,15 @@ footer .in { padding-block: 64px 40px; font-size: 0.95rem; }
       if (i === hover) act = 1;
       var mx = o + Re * cx, my = o + Re * sy;
       if (i === hover) {
-        ctx.strokeStyle = HUE[ORDER[i]]; ctx.lineWidth = 2.5;
+        ctx.strokeStyle = HUE[name]; ctx.lineWidth = 2.5;
         ctx.beginPath(); ctx.moveTo(o + r0 * 0.92 * cx, o + r0 * 0.92 * sy);
         ctx.quadraticCurveTo(o + (r0 + Re) / 2 * Math.cos(ang + 0.35), o + (r0 + Re) / 2 * Math.sin(ang + 0.35), mx, my);
         ctx.stroke();
       }
       var fr = Math.max(14, Math.min(24, w * 0.04)) * (1 + 0.22 * act);
-      drawFace(ctx, mx, my, fr, ORDER[i], act);
-      ctx.font = (act > 0.5 ? '800 ' : '600 ') + fs + 'px "Inter Tight", "Helvetica Neue", Arial, sans-serif';
-      ctx.fillStyle = C.ink;
-      ctx.textAlign = cx > 0.3 ? 'left' : cx < -0.3 ? 'right' : 'center';
-      ctx.textBaseline = sy > 0.3 ? 'top' : sy < -0.3 ? 'bottom' : 'middle';
-      var lr = Re + fr + 10;
-      ctx.fillText(name, o + lr * cx, o + lr * sy);
+      drawFace(ctx, mx, my, fr, name, act);
+      var on = act > 0.5;
+      if (labels[i]._on !== on) { labels[i]._on = on; labels[i].classList.toggle('on', on); }
     });
   }
   mindCanvas.addEventListener('pointermove', function (e) {
@@ -605,7 +640,7 @@ footer .in { padding-block: 64px 40px; font-size: 0.95rem; }
   }
 
   /* ---------- loop ---------- */
-  function sizeAll() { M.size(); BD.size(); lastBrain = -1; }
+  function sizeAll() { M.size(); BD.size(); lastBrain = -1; placeLabels(); }
   function frame(ms) {
     var t = ms / 1000;
     drawMind(t); drawBand(t);
